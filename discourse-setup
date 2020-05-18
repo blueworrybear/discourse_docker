@@ -379,7 +379,7 @@ ask_user_for_config() {
       fi
     fi
 
-    check_IP_match $hostname
+    # check_IP_match $hostname
 
     if [ ! -z "$developer_emails" ]
     then
@@ -671,9 +671,9 @@ fi
 ##
 ## Check requirements before creating a copy of a config file we won't edit
 ##
-check_root
-check_and_install_docker
-check_disk_and_memory
+# check_root
+# check_and_install_docker
+# check_disk_and_memory
 
 if [ -a "$web_file" ]
 then
@@ -686,12 +686,9 @@ then
   BACKUP=$app_name.yml.$DATE.bak
   echo Saving old file as $BACKUP
   cp $web_file containers/$BACKUP
-  echo "Stopping existing container in 5 seconds or Control-C to cancel."
-  sleep 5
-  ./launcher stop app
   echo
 else
-  check_ports
+  # check_ports
   cp -v $web_template $web_file
   if [ "$data_name" == "data" ]
   then
@@ -723,20 +720,3 @@ fi
 scale_ram_and_cpu
 ask_user_for_config
 validate_config
-
-##
-## if we reach this point without exiting, OK to proceed
-## rebuild won't fail if there's nothing to rebuild and does the restart
-##
-echo "Updates successful. Rebuilding in 5 seconds."
-sleep 5 # Just a chance to ^C in case they were too fast on the draw
-if [ "$data_name" == "$app_name" ]
-then
-    echo Building $app_name
-    ./launcher rebuild $app_name
-else
-    echo Building $data_name now . . .
-    ./launcher rebuild $data_name
-    echo Building $app_name now . . .
-    ./launcher rebuild $app_name
-fi

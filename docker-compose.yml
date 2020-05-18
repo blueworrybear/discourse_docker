@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  web:
+    network_mode: "bridge"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: discourse.benno
+    volumes:
+      - type: bind
+        source: /var/discourse/shared/standalone
+        target: /shared
+      - type: bind
+        source: /var/discourse/shared/standalone/log/var-log
+        target: /var/log
+    ports:
+      - "80:80"
+      - "443:443"
+      - "2525:2525"

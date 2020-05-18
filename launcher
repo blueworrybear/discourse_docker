@@ -100,19 +100,19 @@ else
   attach_on_run="-d"
 fi
 
-if [ -n "$DOCKER_HOST" ]; then
-  docker_ip=`sed -e 's/^tcp:\/\/\(.*\):.*$/\1/' <<< "$DOCKER_HOST"`
-elif [ -x "$(which ip 2>/dev/null)" ]; then
-  docker_ip=`ip addr show docker0 | \
-                  grep 'inet ' | \
-                  awk '{ split($2,a,"/"); print a[1] }';`
-else
-  docker_ip=`ifconfig | \
-                  grep -B1 "inet addr" | \
-                  awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' | \
-                  grep docker0 | \
-                  awk -F: '{ print $3 }';`
-fi
+# if [ -n "$DOCKER_HOST" ]; then
+#   docker_ip=`sed -e 's/^tcp:\/\/\(.*\):.*$/\1/' <<< "$DOCKER_HOST"`
+# elif [ -x "$(which ip 2>/dev/null)" ]; then
+#   docker_ip=`ip addr show docker0 | \
+#                   grep 'inet ' | \
+#                   awk '{ split($2,a,"/"); print a[1] }';`
+# else
+#   docker_ip=`ifconfig | \
+#                   grep -B1 "inet addr" | \
+#                   awk '{ if ( $1 == "inet" ) { print $2 } else if ( $2 == "Link" ) { printf "%s:" ,$1 } }' | \
+#                   grep docker0 | \
+#                   awk -F: '{ print $3 }';`
+# fi
 
 # From https://stackoverflow.com/a/44660519/702738
 compare_version() {
@@ -245,9 +245,9 @@ check_prereqs() {
 }
 
 
-if [ -z "$SKIP_PREREQS" ] && [ "$command" != "cleanup" ]; then
-  check_prereqs
-fi
+# if [ -z "$SKIP_PREREQS" ] && [ "$command" != "cleanup" ]; then
+#   check_prereqs
+# fi
 
 host_run() {
   read -r -d '' env_ruby << 'RUBY'
@@ -291,7 +291,7 @@ set_links() {
 }
 
 find_templates() {
-    local templates=`cat $1 | $docker_path run $user_args --rm -i -a stdin -a stdout $image ruby -e \
+    local templates=`cat $1 |  ruby -e \
       "require 'yaml'; puts YAML.load(STDIN.readlines.join)['templates']"`
 
     local arrTemplates=${templates// / }
@@ -354,7 +354,7 @@ RUBY
     tmp_input_file=$(mktemp)
 
     echo "$input" > "$tmp_input_file"
-    raw=`exec cat "$tmp_input_file" | $docker_path run $user_args --rm -i -a stdin -a stdout $image ruby -e "$env_ruby"`
+    raw=`exec cat "$tmp_input_file" | ruby -e "$env_ruby"`
 
     rm -f "$tmp_input_file"
 
@@ -398,7 +398,7 @@ RUBY
     tmp_input_file=$(mktemp)
 
     echo "$input" > "$tmp_input_file"
-    raw=`exec cat "$tmp_input_file" | $docker_path run $user_args --rm -i -a stdin -a stdout $image ruby -e "$labels_ruby"`
+    raw=`exec cat "$tmp_input_file" | ruby -e "$labels_ruby"`
 
     rm -f "$tmp_input_file"
 
@@ -442,7 +442,7 @@ RUBY
     tmp_input_file=$(mktemp)
 
     echo "$input" > "$tmp_input_file"
-    raw=`exec cat "$tmp_input_file" | $docker_path run $user_args --rm -i -a stdin -a stdout $image ruby -e "$ports_ruby"`
+    raw=`exec cat "$tmp_input_file" | ruby -e "$ports_ruby"`
 
     rm -f "$tmp_input_file"
 
@@ -465,42 +465,42 @@ RUBY
    merge_user_args
 }
 
-if [ -z $docker_path ]; then
-  install_docker
-fi
+# if [ -z $docker_path ]; then
+#   install_docker
+# fi
 
-[ "$command" == "cleanup" ] && {
-  $docker_path container prune --filter until=1h
-  $docker_path image prune --all --filter until=1h
+# [ "$command" == "cleanup" ] && {
+#   $docker_path container prune --filter until=1h
+#   $docker_path image prune --all --filter until=1h
 
-  if [ -d /var/discourse/shared/standalone/postgres_data_old ]; then
-    echo
-    echo "Old PostgreSQL backup data cluster detected taking up $(du -hs /var/discourse/shared/standalone/postgres_data_old | awk '{print $1}') detected"
-    read -p "Would you like to remove it? (Y/n): " -n 1 -r && echo
+#   if [ -d /var/discourse/shared/standalone/postgres_data_old ]; then
+#     echo
+#     echo "Old PostgreSQL backup data cluster detected taking up $(du -hs /var/discourse/shared/standalone/postgres_data_old | awk '{print $1}') detected"
+#     read -p "Would you like to remove it? (Y/n): " -n 1 -r && echo
 
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-      echo "removing old PostgreSQL data cluster at /var/discourse/shared/standalone/postgres_data_old..."
-      rm -rf /var/discourse/shared/standalone/postgres_data_old
-    else
-      exit 1
-    fi
-  fi
+#     if [[ $REPLY =~ ^[Yy]$ ]]; then
+#       echo "removing old PostgreSQL data cluster at /var/discourse/shared/standalone/postgres_data_old..."
+#       rm -rf /var/discourse/shared/standalone/postgres_data_old
+#     else
+#       exit 1
+#     fi
+#   fi
 
-  exit 0
-}
+#   exit 0
+# }
 
-if [ ! "$command" == "setup" ]; then
-  if [[ ! -e $config_file ]]; then
-    echo "Config file was not found, ensure $config_file exists"
-    echo
-    echo "Available configs ( `cd containers && ls -dm *.yml | tr -s '\n' ' ' | awk '{ gsub(/\.yml/, ""); print }'`)"
-    exit 1
-  fi
-fi
+# if [ ! "$command" == "setup" ]; then
+#   if [[ ! -e $config_file ]]; then
+#     echo "Config file was not found, ensure $config_file exists"
+#     echo
+#     echo "Available configs ( `cd containers && ls -dm *.yml | tr -s '\n' ' ' | awk '{ gsub(/\.yml/, ""); print }'`)"
+#     exit 1
+#   fi
+# fi
 
-docker_version=($($docker_path --version))
-docker_version=${test[2]//,/}
-restart_policy=${restart_policy:---restart=always}
+# docker_version=($($docker_path --version))
+# docker_version=${test[2]//,/}
+# restart_policy=${restart_policy:---restart=always}
 
 set_existing_container(){
   existing=`$docker_path ps -a | awk '{ print $1, $(NF) }' | grep " $config$" | awk '{ print $1 }'`
@@ -552,7 +552,7 @@ set_boot_command() {
 merge_user_args() {
   local docker_args
 
-  docker_args=`cat $config_file | $docker_path run $user_args --rm -i -a stdout -a stdin $image ruby -e \
+  docker_args=`cat $config_file | ruby -e \
           "require 'yaml'; puts YAML.load(STDIN.readlines.join)['docker_args']"`
 
   if [[ -n "$docker_args" ]]; then
@@ -653,48 +653,48 @@ run_run() {
 }
 
 run_bootstrap() {
-  host_run
+  # host_run
 
   # Is the image available?
   # If not, pull it here so the user is aware what's happening.
-  $docker_path history $image >/dev/null 2>&1 || $docker_path pull $image
+  # $docker_path history $image >/dev/null 2>&1 || $docker_path pull $image
 
   set_template_info
 
-  base_image=`cat $config_file | $docker_path run $user_args --rm -i -a stdin -a stdout $image ruby -e \
-    "require 'yaml'; puts YAML.load(STDIN.readlines.join)['base_image']"`
+  # base_image=`cat $config_file | $docker_path run $user_args --rm -i -a stdin -a stdout $image ruby -e \
+  #   "require 'yaml'; puts YAML.load(STDIN.readlines.join)['base_image']"`
 
-  update_pups=`cat $config_file | $docker_path run $user_args --rm -i -a stdin -a stdout $image ruby -e \
+  update_pups=`cat $config_file | ruby -e \
     "require 'yaml'; puts YAML.load(STDIN.readlines.join)['update_pups']"`
 
-  if [[ ! X"" = X"$base_image" ]]; then
-    image=$base_image
-  fi
+  # if [[ ! X"" = X"$base_image" ]]; then
+  #   image=$base_image
+  # fi
 
-  set_volumes
-  set_links
+  # set_volumes
+  # set_links
 
   rm -f $cidbootstrap
-
   run_command="cd /pups &&"
   if [[ ! "false" =  $update_pups ]]; then
     run_command="$run_command git pull &&"
   fi
-  run_command="$run_command /pups/bin/pups --stdin"
+  run_command="$run_command /pups/bin/pups "
 
   echo $run_command
 
   unset ERR
 
   tmp_input_file=$(mktemp)
-
+  # cd /pups && git pull
   echo "$input" > "$tmp_input_file"
-  (exec cat "$tmp_input_file" | $docker_path run --shm-size=512m $user_args $links "${env[@]}" -e DOCKER_HOST_IP="$docker_ip" --cidfile $cidbootstrap -i -a stdin -a stdout -a stderr $volumes $image \
-    /bin/bash -c "$run_command") || ERR=$?
+  exec cat $tmp_input_file | /bin/bash -c "$run_command --stdin"
+  # (exec cat "$tmp_input_file" | $docker_path run --shm-size=512m $user_args $links "${env[@]}" -e DOCKER_HOST_IP="$docker_ip" --cidfile $cidbootstrap -i -a stdin -a stdout -a stderr $volumes $image \
+  #   /bin/bash -c "$run_command") || ERR=$?
 
   rm -f "$tmp_input_file"
-
-  unset FAILED
+  exit 0
+  # unset FAILED
   # magic exit code that indicates a retry
   if [[ "$ERR" == 77 ]]; then
     $docker_path rm `cat $cidbootstrap`
