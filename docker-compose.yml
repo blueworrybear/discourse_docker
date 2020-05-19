@@ -5,6 +5,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        DISCOURSE_HOSTNAME: 'discourse.nctu.me'
+        DISCOURSE_DEVELOPER_EMAILS: 'blueworrybear@gmail.com'
+        DISCOURSE_SMTP_ADDRESS: "smtp.sendgrid.net"
+        DISCOURSE_SMTP_PORT: 2525
+        DISCOURSE_SMTP_USER_NAME: apikey
+        DISCOURSE_SMTP_PASSWORD: ""
+        # Replace with your let's encrypt email to enable HTTPs
+        LETSENCRYPT_ACCOUNT_EMAIL: 'OFF'
     image: discourse.benno
     volumes:
       - type: bind
