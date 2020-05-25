@@ -1,0 +1,27 @@
+steps:
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: [ '-c', 'gcloud secrets versions access 1 --secret=sendgrid-token > sendgrid.txt' ]
+- name: 'gcr.io/cloud-builders/docker'
+  env:
+    - 'DISCOURSE_HOSTNAME=discourse.nctu.me'
+    - 'DISCOURSE_DEVELOPER_EMAILS=blueworrybear@gmail.com'
+    - 'DISCOURSE_SMTP_ADDRESS=smtp.sendgrid.net'
+    - 'DISCOURSE_SMTP_PORT=2525'
+    - 'DISCOURSE_SMTP_USER_NAME=apikey'
+    - 'LETSENCRYPT_ACCOUNT_EMAIL=OFF'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - >
+      docker build -t 'gcr.io/benno-lin/discourse'
+      --build-arg DISCOURSE_HOSTNAME
+      --build-arg DISCOURSE_DEVELOPER_EMAILS
+      --build-arg DISCOURSE_SMTP_ADDRESS
+      --build-arg DISCOURSE_SMTP_PORT
+      --build-arg DISCOURSE_SMTP_USER_NAME
+      --build-arg DISCOURSE_SMTP_PASSWORD=$(cat sendgrid.txt)
+      --build-arg LETSENCRYPT_ACCOUNT_EMAIL
+      .
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/benno-lin/discourse']
