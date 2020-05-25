@@ -32,5 +32,7 @@ ENV LC_ALL en_US.UTF-8
 WORKDIR /var/discourse
 COPY . .
 RUN ./discourse-setup
-RUN ./launcher app
-ENTRYPOINT [ "/sbin/boot" ]
+# RUN ./launcher app
+COPY boot.sh /usr/bin/
+# ENTRYPOINT [ "/sbin/boot" ]
+ENTRYPOINT [ "/bin/bash", "/usr/bin/boot.sh" ]
