@@ -29,6 +29,9 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
+RUN apt-get update -y
+RUN apt-get install iputils-ping -y
+
 WORKDIR /var/discourse
 COPY . .
 RUN ./discourse-setup
