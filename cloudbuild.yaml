@@ -14,7 +14,7 @@ steps:
   args:
     - '-c'
     - >
-      docker build -t 'gcr.io/benno-lin/discourse'
+      docker build -t 'gcr.io/benno-lin/discourse-volume'
       --build-arg DISCOURSE_HOSTNAME
       --build-arg DISCOURSE_DEVELOPER_EMAILS
       --build-arg DISCOURSE_SMTP_ADDRESS
@@ -24,4 +24,4 @@ steps:
       --build-arg LETSENCRYPT_ACCOUNT_EMAIL
       .
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/benno-lin/discourse']
+  args: ['push', 'gcr.io/benno-lin/discourse-volume']

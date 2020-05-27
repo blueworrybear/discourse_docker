@@ -1,0 +1,37 @@
+name: Build and Deploy to Google Compute Engine
+
+on:
+  push:
+    branches:
+    - docker-volume
+
+env:
+  PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        repository: blueworrybear/discourse_docker
+        ref: docker-compose
+
+    # Setup gcloud CLI
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '290.0.1'
+        service_account_key: ${{ secrets.GCE_SA_KEY }}
+        project_id: ${{ secrets.GCE_PROJECT }}
+
+    # Configure Docker to use the gcloud command-line tool as a credential
+    # helper for authentication
+    - run: |-
+        gcloud --quiet auth configure-docker
+    # Build the Docker image
+    - name: Build and Publish
+      run: |-
+        gcloud builds submit
