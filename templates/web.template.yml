@@ -88,13 +88,10 @@ run:
       cmd:
         - git reset --hard
         - git clean -f
-        - git remote add upstream https://github.com/blueworrybear/discourse.git
-        - git fetch upstream dogfood
-        - git checkout -b dogfood upstream/dogfood
-        # - git remote set-branches --add origin master
-        # - git pull
-        # - git fetch origin $version
-        # - git checkout $version
+        - git remote set-branches --add origin master
+        - git pull
+        - git fetch origin $version
+        - git checkout $version
         - mkdir -p tmp/pids
         - mkdir -p tmp/sockets
         - touch tmp/.gitkeep

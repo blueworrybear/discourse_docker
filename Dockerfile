@@ -35,7 +35,6 @@ RUN apt-get install iputils-ping -y
 WORKDIR /var/discourse
 COPY . .
 RUN ./discourse-setup
-# RUN ./launcher app
-COPY boot.sh /usr/bin/
-# ENTRYPOINT [ "/sbin/boot" ]
-ENTRYPOINT [ "/bin/bash", "/usr/bin/boot.sh" ]
+RUN ./launcher app
+VOLUME ["/shared", "/var/log"]
+ENTRYPOINT [ "/sbin/boot" ]
