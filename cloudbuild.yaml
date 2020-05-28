@@ -4,7 +4,7 @@ steps:
   args: [ '-c', 'gcloud secrets versions access 1 --secret=sendgrid-token > sendgrid.txt' ]
 - name: 'gcr.io/cloud-builders/docker'
   env:
-    - 'DISCOURSE_HOSTNAME=discourse.nctu.me'
+    - 'DISCOURSE_HOSTNAME=f12gpu1:6060'
     - 'DISCOURSE_DEVELOPER_EMAILS=blueworrybear@gmail.com'
     - 'DISCOURSE_SMTP_ADDRESS=smtp.sendgrid.net'
     - 'DISCOURSE_SMTP_PORT=2525'
